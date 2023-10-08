@@ -8,6 +8,26 @@ import sys  # To find out the script name (in argv[0])
 # Import the backtrader platform
 import backtrader as bt
 
+import ipdb
+
+# create A股 commission 
+class ACommission(bt.CommInfoBase):
+    params = (
+        ('stocklike', True), # 指定为股票模式
+        ('commtype', bt.CommInfoBase.COMM_PERC), # commission使用百分比费用模式
+        ('percabs', False), # commission理解为百分数
+        ('stamp_duty', 0.0005), # 印花税默认为 0.05%
+        ('commission', 0.01))  #佣金万1
+    
+    
+        # 自定义费用计算公式
+    def _getcommission(self, size, price, pseudoexec):
+            if size > 0: # 买入时，考虑佣金(万一不免5)
+                return max(abs(size) * price * self.p.commission, 5)
+            elif size < 0: # 卖出时，同时考虑佣金和印花税过户费
+                return max(abs(size) * price * self.p.commission, 5) + abs(size) * price *  self.p.stamp_duty
+            else:
+                return 0
 
 # Create a Stratey
 class TestStrategy(bt.Strategy):
@@ -142,13 +162,15 @@ if __name__ == '__main__':
     cerebro.adddata(data)
 
     # Set our desired cash start
-    cerebro.broker.setcash(10000.0)
+    cerebro.broker.setcash(1000000.0)
 
     # Add a FixedSize sizer according to the stake
-    cerebro.addsizer(bt.sizers.FixedSize, stake=10)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=10000)
 
     # Set the commission
-    cerebro.broker.setcommission(commission=2.5, commtype='fixed')
+    comminfo = ACommission()
+    cerebro.broker.addcommissioninfo(comminfo)
+    # cerebro.broker.setcommission(commission=2.5, commtype='fixed')
 
     # Print out the starting conditions
     print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
@@ -160,4 +182,4 @@ if __name__ == '__main__':
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     # Plot the result
-    cerebro.plot()
+    # cerebro.plot()
