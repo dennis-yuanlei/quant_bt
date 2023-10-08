@@ -54,13 +54,12 @@ class TestStrategy(bt.Strategy):
             self.datas[0], period=self.params.maperiod)
 
         # Indicators for the plotting show
-        bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
-        bt.indicators.WeightedMovingAverage(self.datas[0], period=25,
-                                            subplot=True)
-        bt.indicators.StochasticSlow(self.datas[0])
-        bt.indicators.MACDHisto(self.datas[0])
-        rsi = bt.indicators.RSI(self.datas[0])
-        bt.indicators.SmoothedMovingAverage(rsi, period=10)
+        bt.indicators.ExponentialMovingAverage(self.datas[0], period=25, plot=False)
+        bt.indicators.WeightedMovingAverage(self.datas[0], period=25, subplot=False)
+        bt.indicators.StochasticSlow(self.datas[0], plot=False)
+        bt.indicators.MACDHisto(self.datas[0], plot=True)
+        rsi = bt.indicators.RSI(self.datas[0], plot=False)
+        bt.indicators.SmoothedMovingAverage(rsi, period=10, plot=False)
         bt.indicators.ATR(self.datas[0], plot=False)
 
     def notify_order(self, order):
@@ -102,6 +101,7 @@ class TestStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
+        # ipdb.set_trace()
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
 
@@ -119,7 +119,7 @@ class TestStrategy(bt.Strategy):
                 self.log('BUY CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
-                self.order = self.buy()
+                self.order = self.buy(exectype=bt.Order.Market)
 
         else:
 
@@ -128,7 +128,7 @@ class TestStrategy(bt.Strategy):
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
-                self.order = self.sell()
+                self.order = self.sell(exectype=bt.Order.Market)
 
 
 if __name__ == '__main__':
@@ -159,13 +159,15 @@ if __name__ == '__main__':
         openinterest=-1)
 
     # Add the Data Feed to Cerebro
-    cerebro.adddata(data)
+    cerebro.adddata(data, name='601127')
 
     # Set our desired cash start
-    cerebro.broker.setcash(1000000.0)
+    cerebro.broker.setcash(10000.0)
+    # 配置滑点为0.01%
+    cerebro.broker.set_slippage_perc(perc=0.0001)
 
     # Add a FixedSize sizer according to the stake
-    cerebro.addsizer(bt.sizers.FixedSize, stake=10000)
+    cerebro.addsizer(bt.sizers.FixedSize, stake=100)
 
     # Set the commission
     comminfo = ACommission()
