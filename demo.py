@@ -9,6 +9,7 @@ import sys  # To find out the script name (in argv[0])
 import backtrader as bt
 
 import ipdb
+import pandas as pd
 
 # create A股 commission 
 class ACommission(bt.CommInfoBase):
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     data = bt.feeds.GenericCSVData(
         dataname='./601127.csv',
 
-        fromdate=datetime.datetime(2023, 1, 1),
+        fromdate=datetime.datetime(2022, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
 
         nullvalue=0.0,
@@ -174,7 +175,6 @@ if __name__ == '__main__':
 
     # Print out the starting conditions
     start_value = cerebro.broker.getvalue()
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     # 添加分析指标
     # 返回年初至年末的年度收益率
@@ -197,17 +197,16 @@ if __name__ == '__main__':
     print('start Portfolio Value: %.2f' % start_value)
     print("--------------- Final Portfolio Value -----------------")
     print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
-    # 提取分析结果
-    print("--------------- AnnualReturn -----------------")
-    print(result[0].analyzers._AnnualReturn.get_analysis())
-    print("--------------- DrawDown -----------------")
-    print(result[0].analyzers._DrawDown.get_analysis())
-    print("--------------- Returns -----------------")
-    print(result[0].analyzers._Returns.get_analysis())
-    print("--------------- SharpeRatio -----------------")
-    print(result[0].analyzers._SharpeRatio.get_analysis())
-    print("--------------- SharpeRatio_A -----------------")
-    print(result[0].analyzers._SharpeRatio_A.get_analysis())
+    # 常用指标提取
+    analyzer = {}
+    # 提取年化收益
+    analyzer['年化收益率'] = result[0].analyzers._Returns.get_analysis()['rnorm']
+    analyzer['年化收益率（%）'] = result[0].analyzers._Returns.get_analysis()['rnorm100']
+    # 提取最大回撤
+    analyzer['最大回撤（%）'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
+    # 提取夏普比率
+    analyzer['年化夏普比率'] = result[0].analyzers._SharpeRatio_A.get_analysis()['sharperatio']
+    print(analyzer)
 
     # Plot the result
     cerebro.plot()
