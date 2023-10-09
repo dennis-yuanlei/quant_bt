@@ -101,10 +101,8 @@ class TestStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
-        ipdb.set_trace()
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
-
         # Check if an order is pending ... if yes, we cannot send a 2nd one
         if self.order:
             return
@@ -143,7 +141,7 @@ if __name__ == '__main__':
     data = bt.feeds.GenericCSVData(
         dataname='./601127.csv',
 
-        fromdate=datetime.datetime(2021, 1, 1),
+        fromdate=datetime.datetime(2023, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
 
         nullvalue=0.0,

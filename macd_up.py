@@ -32,11 +32,12 @@ class ACommission(bt.CommInfoBase):
 # create a signal
 class MacdUpSignal(bt.Indicator):
     lines = ('signal',)
-    params = (('period', 15),)
 
     def __init__(self):
-        self.lines.signal = self.data - bt.indicators.SMA(period=self.p.period)
-
+        self.macd = bt.indicators.MACDHisto(self.datas[0])
+        
+    def next(self):
+         self.line[0] = 1 if (self.macd.lines.histo[0]>self.macd.lines.histo[-1] and self.macd.lines.histo[-1]>self.macd.lines.histo[-2]) else -1
 
 if __name__ == '__main__':
     # Create a cerebro entity
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     data = bt.feeds.GenericCSVData(
         dataname='./601127.csv',
 
-        fromdate=datetime.datetime(2021, 1, 1),
+        fromdate=datetime.datetime(2023, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
 
         nullvalue=0.0,
@@ -65,10 +66,12 @@ if __name__ == '__main__':
     # Add the Data Feed to Cerebro
     cerebro.adddata(data, name='601127')
 
+    # cerebro.addstrategy(MacdUpSignal)
     # Add a signal
     cerebro.add_signal(bt.SIGNAL_LONG, MacdUpSignal)
     cerebro.signal_accumulate(False)
     cerebro.signal_concurrent(True)
+    cerebro.addindicator(bt.indicators.MACDHisto)
 
     # Set our desired cash start
     cerebro.broker.setcash(10000.0)
