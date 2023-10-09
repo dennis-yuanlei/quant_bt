@@ -34,10 +34,15 @@ class MacdUpSignal(bt.Indicator):
     lines = ('signal',)
 
     def __init__(self):
-        self.macd = bt.indicators.MACDHisto(self.datas[0])
+        self.macd = bt.indicators.MACDHisto()
+        self.bolling = bt.indicators.BollingerBandsPct()
         
     def next(self):
-         self.line[0] = 1 if (self.macd.lines.histo[0]>self.macd.lines.histo[-1] and self.macd.lines.histo[-1]>self.macd.lines.histo[-2]) else -1
+        if (self.macd.lines.histo[0]>self.macd.lines.histo[-1] and self.macd.lines.histo[-1]>self.macd.lines.histo[-2]) and \
+            self.data.lines.close[0]>self.bolling[0]:
+             self.line[0] = 1
+        else:
+             self.line[0] = -1
 
 if __name__ == '__main__':
     # Create a cerebro entity
@@ -50,11 +55,8 @@ if __name__ == '__main__':
 
         fromdate=datetime.datetime(2022, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
-
         nullvalue=0.0,
-
         dtformat=('%Y-%m-%d'),
-
         datetime=0,
         open=1,
         close=2,
@@ -66,15 +68,16 @@ if __name__ == '__main__':
     # Add the Data Feed to Cerebro
     cerebro.adddata(data, name='601127')
 
-    # cerebro.addstrategy(MacdUpSignal)
     # Add a signal
     cerebro.add_signal(bt.SIGNAL_LONG, MacdUpSignal)
     cerebro.signal_accumulate(False)
     cerebro.signal_concurrent(True)
+    # 添加要监控的指标
     cerebro.addindicator(bt.indicators.MACDHisto)
+    cerebro.addindicator(bt.indicators.BollingerBandsPct)
 
     # Set our desired cash start
-    cerebro.broker.setcash(10000.0)
+    cerebro.broker.setcash(50000.0)
     # 配置滑点为0.01%
     cerebro.broker.set_slippage_perc(perc=0.0001)
 
@@ -88,7 +91,6 @@ if __name__ == '__main__':
 
     # Print out the starting conditions
     start_value = cerebro.broker.getvalue()
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     # 添加分析指标
     # 返回年初至年末的年度收益率
@@ -105,6 +107,12 @@ if __name__ == '__main__':
 
     # Run over everything
     result = cerebro.run()
+
+    # Print out the final result
+    print("--------------- start Portfolio Value -----------------")
+    print('start Portfolio Value: %.2f' % start_value)
+    print("--------------- Final Portfolio Value -----------------")
+    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
     # 常用指标提取
     analyzer = {}
