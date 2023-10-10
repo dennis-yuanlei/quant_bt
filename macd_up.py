@@ -19,7 +19,6 @@ class ACommission(bt.CommInfoBase):
         ('stamp_duty', 0.0005), # 印花税默认为 0.05%
         ('commission', 0.01))  #佣金万1
     
-    
         # 自定义费用计算公式
     def _getcommission(self, size, price, pseudoexec):
             if size > 0: # 买入时，考虑佣金(万一不免5)
@@ -53,7 +52,7 @@ if __name__ == '__main__':
     data = bt.feeds.GenericCSVData(
         dataname='./601127.csv',
 
-        fromdate=datetime.datetime(2022, 1, 1),
+        fromdate=datetime.datetime(2023, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
         nullvalue=0.0,
         dtformat=('%Y-%m-%d'),
@@ -67,6 +66,24 @@ if __name__ == '__main__':
 
     # Add the Data Feed to Cerebro
     cerebro.adddata(data, name='601127')
+
+    # add benchmark 沪深300
+    hushen300 = bt.feeds.GenericCSVData(
+        dataname='./000300.csv',
+        fromdate=datetime.datetime(2023, 1, 1),
+        todate=datetime.datetime(2023, 12, 31),
+        nullvalue=0.0,
+        dtformat=('%Y-%m-%d'),
+        datetime=0,
+        open=1,
+        close=2,
+        high=3,
+        low=4,
+        volume=5,
+        openinterest=-1)
+    cerebro.adddata(hushen300, name='hs300')
+    cerebro.addobserver(bt.observers.Benchmark, data=hushen300)
+    cerebro.addobserver(bt.observers.TimeReturn)
 
     # Add a signal
     cerebro.add_signal(bt.SIGNAL_LONG, MacdUpSignal)
@@ -101,9 +118,8 @@ if __name__ == '__main__':
     cerebro.addanalyzer(bt.analyzers.Returns, _name='_Returns', tann=252)
     # 计算年化夏普比率：日度收益
     cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name='_SharpeRatio', timeframe=bt.TimeFrame.Days, annualize=True, riskfreerate=0) # 计算夏普比率
-    cerebro.addanalyzer(bt.analyzers.SharpeRatio_A, _name='_SharpeRatio_A')
     # 返回收益率时序
-    cerebro.addanalyzer(bt.analyzers.TimeReturn, _name='_TimeReturn')
+    # cerebro.addanalyzer(bt.analyzers.TimeReturn, _name='_TimeReturn')
 
     # Run over everything
     result = cerebro.run()
@@ -122,8 +138,8 @@ if __name__ == '__main__':
     # 提取最大回撤
     analyzer['最大回撤（%）'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
     # 提取夏普比率
-    analyzer['年化夏普比率'] = result[0].analyzers._SharpeRatio_A.get_analysis()['sharperatio']
+    analyzer['夏普比率'] = result[0].analyzers._SharpeRatio.get_analysis()['sharperatio']
     print(analyzer)
 
     # Plot the result
-    cerebro.plot()
+    # cerebro.plot()
