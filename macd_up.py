@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # Datas are in a subfolder of the samples. Need to find where the script is
     # because it could have been called from anywhere
     data = bt.feeds.GenericCSVData(
-        dataname='./601127.csv',
+        dataname='./002642.csv',
 
         fromdate=datetime.datetime(2023, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     cerebro.addindicator(bt.indicators.BollingerBandsPct)
 
     # Set our desired cash start
-    cerebro.broker.setcash(50000.0)
+    cerebro.broker.setcash(10000.0)
     # 配置滑点为0.01%
     cerebro.broker.set_slippage_perc(perc=0.0001)
 
@@ -134,9 +134,9 @@ if __name__ == '__main__':
     analyzer = {}
     # 提取年化收益
     analyzer['年化收益率'] = result[0].analyzers._Returns.get_analysis()['rnorm']
-    analyzer['年化收益率（%）'] = result[0].analyzers._Returns.get_analysis()['rnorm100']
+    analyzer['年化收益率（%)'] = result[0].analyzers._Returns.get_analysis()['rnorm100']
     # 提取最大回撤
-    analyzer['最大回撤（%）'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
+    analyzer['最大回撤（%)'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
     # 提取夏普比率
     analyzer['夏普比率'] = result[0].analyzers._SharpeRatio.get_analysis()['sharperatio']
     print(analyzer)
