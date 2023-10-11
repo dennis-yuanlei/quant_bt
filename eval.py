@@ -103,6 +103,9 @@ def evaluate(num, start_date, end_date, mystrategy=None, mysignal=None, id_path=
         analyzer['最大回撤（%)'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
         # 提取夏普比率
         analyzer['夏普比率'] = result[0].analyzers._SharpeRatio.get_analysis()['sharperatio']
+        if analyzer['夏普比率'] is None:
+            i += 1
+            continue
         print(f'{_id}: {analyzer}')
         avg_AnnualReturn += analyzer['年化收益率（%)']
         avg_DrawDown += analyzer['最大回撤（%)']
