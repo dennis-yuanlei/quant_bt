@@ -7,8 +7,11 @@ import sys  # To find out the script name (in argv[0])
 
 # Import the backtrader platform
 import backtrader as bt
+import akshare as ak
 
 import ipdb
+
+from eval import *
 
 # create A股 commission 
 class ACommission(bt.CommInfoBase):
@@ -51,7 +54,6 @@ if __name__ == '__main__':
     # because it could have been called from anywhere
     data = bt.feeds.GenericCSVData(
         dataname='./002642.csv',
-
         fromdate=datetime.datetime(2023, 1, 1),
         todate=datetime.datetime(2023, 12, 31),
         nullvalue=0.0,
@@ -63,7 +65,6 @@ if __name__ == '__main__':
         low=4,
         volume=5,
         openinterest=-1)
-
     # Add the Data Feed to Cerebro
     cerebro.adddata(data, name='601127')
 
@@ -133,7 +134,6 @@ if __name__ == '__main__':
     # 常用指标提取
     analyzer = {}
     # 提取年化收益
-    analyzer['年化收益率'] = result[0].analyzers._Returns.get_analysis()['rnorm']
     analyzer['年化收益率（%)'] = result[0].analyzers._Returns.get_analysis()['rnorm100']
     # 提取最大回撤
     analyzer['最大回撤（%)'] = result[0].analyzers._DrawDown.get_analysis()['max']['drawdown'] * (-1)
@@ -143,3 +143,5 @@ if __name__ == '__main__':
 
     # Plot the result
     # cerebro.plot()
+
+    evaluate(50, '20230101', '20231231', mysignal=MacdUpSignal)
