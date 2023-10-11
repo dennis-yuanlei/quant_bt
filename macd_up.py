@@ -40,9 +40,11 @@ class MacdUpSignal(bt.Indicator):
         self.bolling = bt.indicators.BollingerBandsPct()
         
     def next(self):
-        if (self.macd.lines.histo[0]>self.macd.lines.histo[-1] and self.macd.lines.histo[-1]>self.macd.lines.histo[-2]) and \
-            self.data.lines.close[0]>self.bolling[0]:
+        if (self.macd.lines.histo[0]-self.macd.lines.histo[-1]>0.1) :#and self.macd.lines.histo[-1]>self.macd.lines.histo[-2]) and \
+            # self.data.lines.close[0]>self.bolling[0]:
              self.line[0] = 1
+        elif (self.macd.lines.histo[0]-self.macd.lines.histo[-1]>0):
+             self.line[0] = 0
         else:
              self.line[0] = -1
 
@@ -69,22 +71,22 @@ if __name__ == '__main__':
     cerebro.adddata(data, name='601127')
 
     # add benchmark 沪深300
-    hushen300 = bt.feeds.GenericCSVData(
-        dataname='./000300.csv',
-        fromdate=datetime.datetime(2023, 1, 1),
-        todate=datetime.datetime(2023, 12, 31),
-        nullvalue=0.0,
-        dtformat=('%Y-%m-%d'),
-        datetime=0,
-        open=1,
-        close=2,
-        high=3,
-        low=4,
-        volume=5,
-        openinterest=-1)
-    cerebro.adddata(hushen300, name='hs300')
-    cerebro.addobserver(bt.observers.Benchmark, data=hushen300)
-    cerebro.addobserver(bt.observers.TimeReturn)
+    # hushen300 = bt.feeds.GenericCSVData(
+    #     dataname='./000300.csv',
+    #     fromdate=datetime.datetime(2023, 1, 1),
+    #     todate=datetime.datetime(2023, 12, 31),
+    #     nullvalue=0.0,
+    #     dtformat=('%Y-%m-%d'),
+    #     datetime=0,
+    #     open=1,
+    #     close=2,
+    #     high=3,
+    #     low=4,
+    #     volume=5,
+    #     openinterest=-1)
+    # cerebro.adddata(hushen300, name='hs300')
+    # cerebro.addobserver(bt.observers.Benchmark, data=hushen300)
+    # cerebro.addobserver(bt.observers.TimeReturn)
 
     # Add a signal
     cerebro.add_signal(bt.SIGNAL_LONG, MacdUpSignal)
@@ -142,6 +144,6 @@ if __name__ == '__main__':
     print(analyzer)
 
     # Plot the result
-    # cerebro.plot()
+    cerebro.plot()
 
-    evaluate(50, '20230101', '20231231', mysignal=MacdUpSignal)
+    # evaluate(50, '20230101', '20231231', mysignal=MacdUpSignal)
