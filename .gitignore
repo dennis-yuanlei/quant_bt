@@ -1,2 +1,7 @@
 **/.DS_Store
 demo/.ipynb_checkpoints/
+anaconda_projects/
+.ipynb_checkpoints/
+.virtual_documents/
+
+**.pyc
